@@ -1,16 +1,18 @@
-package com.uchenna.restblogweek9.response;
+package com.uchenna.restblogweek9.pojo;
 
-import com.uchenna.restblogweek9.model.Like;
 import com.uchenna.restblogweek9.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-@Data
 @AllArgsConstructor
-public class LikeResponse {
+@NoArgsConstructor
+@Data
+@EqualsAndHashCode
+public class RegisterResponse {
     private String message;
     private LocalDateTime timeStamp;
-    private Like like;
-    private int totalLikes;
+    private User user;
 }

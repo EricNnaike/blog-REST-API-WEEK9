@@ -1,10 +1,7 @@
 package com.uchenna.restblogweek9.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
+@EqualsAndHashCode
 @Entity
 @Table(name = "users")
 public class User {

@@ -1,7 +1,6 @@
-package com.uchenna.restblogweek9.response;
+package com.uchenna.restblogweek9.pojo;
 
 import com.uchenna.restblogweek9.model.Comment;
-import com.uchenna.restblogweek9.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

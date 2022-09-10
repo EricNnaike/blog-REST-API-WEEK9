@@ -12,7 +12,7 @@ import com.uchenna.restblogweek9.repository.CommentRepository;
 import com.uchenna.restblogweek9.repository.LikeRepository;
 import com.uchenna.restblogweek9.repository.PostRepository;
 import com.uchenna.restblogweek9.repository.UserRepository;
-import com.uchenna.restblogweek9.response.*;
+import com.uchenna.restblogweek9.pojo.*;
 import com.uchenna.restblogweek9.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     //slug regex
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
-    private static final Pattern WHITESPACE = Pattern.compile("[^\\s]");
+    private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
     public UserServiceImpl(CommentRepository commentRepository, LikeRepository likeRepository, PostRepository postRepository, UserRepository userRepository) {
         this.commentRepository = commentRepository;
@@ -45,13 +45,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RegisterResponse register(UserDTO userDTO) {
-        User user = new User();
-        user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
-        user.setRole(userDTO.getRole());
-        user.setPassword(userDTO.getPassword());
-        userRepository.save(user);
-        return new RegisterResponse("SUCCESS", LocalDateTime.now(), user);
+//        String quest = userDTO.getEmail();
+//        if (quest == null) {
+            User user = new User();
+            user.setName(userDTO.getName());
+            user.setEmail(userDTO.getEmail());
+            user.setRole(userDTO.getRole());
+            user.setPassword(userDTO.getPassword());
+            userRepository.save(user);
+            return new RegisterResponse("SUCCESS", LocalDateTime.now(), user);
+//        }
+//       else throw new UserAlreadyExistException("Email already exists. Create a new one");
     }
 
     @Override
@@ -71,7 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CreatePostResponse createPost(PostDTO postDTO) {
+    public PostResponse createPost(PostDTO postDTO) {
         Post post = new Post();
         User user = findUserById(postDTO.getUser_id());
         post.setTitle(postDTO.getTitle());
@@ -80,7 +84,7 @@ public class UserServiceImpl implements UserService {
         post.setFeaturedImage(postDTO.getFeaturedImage());
         post.setUser(user);
         postRepository.save(post);
-        return new CreatePostResponse("SUCCESS", LocalDateTime.now(), post);
+        return new PostResponse("SUCCESS", LocalDateTime.now(), post);
     }
 
     @Override
@@ -92,15 +96,15 @@ public class UserServiceImpl implements UserService {
         comment.setUser(user);
         comment.setPost(post);
         commentRepository.save(comment);
-        return new CommentResponse("SUCCESS", LocalDateTime.now(), comment);
+        return new CommentResponse("SUCCESS", LocalDateTime.now(), comment, post);
     }
 
     @Override
     public LikeResponse liked(int user_id, int post_id, LikeDTO likeDTO) {
         Like like = new Like();
-        Like duplicateLike = likeRepository.findLikeByUserIdAndPostId(user_id, post_id);
         LikeResponse likeResponse = null;
-        if (duplicateLike == null) {
+        Like duplicateLike = likeRepository.findLikeByUserIdAndPostId(user_id , post_id);
+        if (duplicateLike == null){
             User user = findUserById(user_id);
             Post post = findPostById(post_id);
             like.setLiked(likeDTO.isLiked());
@@ -108,32 +112,45 @@ public class UserServiceImpl implements UserService {
             like.setPost(post);
             likeRepository.save(like);
             List<Like> likeList = likeRepository.likeList(post_id);
-            likeResponse = new LikeResponse("SUCCESS", LocalDateTime.now(), like, likeList.size());
+            likeResponse = new LikeResponse("success" , LocalDateTime.now() , like , likeList.size(), post);
         }else {
             likeRepository.delete(duplicateLike);
-            throw new PostAlreadyLikedException("This post has been liked. It is now unliked (");
+            throw  new PostAlreadyLikedException("This post has been liked, It is now Unliked :(");
         }
-
-
-
-
-        return null;
+        return likeResponse;
     }
 
     @Override
     public SearchCommentResponse searchComment(String keyword) {
-        List<Comment> commentList = commentRepository.findByCommentContaining(keyword);
+        List<Comment> commentList = commentRepository.findByCommentContainingIgnoreCase(keyword);
         return new SearchCommentResponse("SUCCESS", LocalDateTime.now(), commentList);
     }
 
     @Override
     public SearchPostResponse searchPost(String keyword) {
-        List<Post> postList = postRepository.findPostByTitleContaining(keyword);
+        List<Post> postList = postRepository.findPostByTitleContainingIgnoreCase(keyword);
         return new SearchPostResponse("SUCCESS", LocalDateTime.now(), postList);
     }
 
+    @Override
+    public PostResponse editPost(int post_id, PostDTO postDTO) {
+        Post post = findPostById(post_id);
+        User user = findUserById(postDTO.getUser_id());
+        post.setTitle(postDTO.getTitle());
+        post.setDescription(postDTO.getDescription());
+        post.setFeaturedImage(postDTO.getFeaturedImage());
+        post.setSlug(postDTO.getTitle());
+        post.setUser(user);
+        postRepository.save(post);
+        return new PostResponse("SUCCESS", LocalDateTime.now(), post);
+
+    }
+
+
+
+
     public User findUserById(int id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + "not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + "  not found"));
     }
 
     public Post findPostById(int id) {
@@ -145,10 +162,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public String makeSlug(String input) {
-        String noWhiteSpace = WHITESPACE.matcher(input).replaceAll("-");
-        String nomalized = Normalizer.normalize(noWhiteSpace, Normalizer.Form.NFD);
-        String slug = NONLATIN.matcher(nomalized).replaceAll("");
+        String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
+        String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
+        String slug = NONLATIN.matcher(normalized).replaceAll("");
         return slug.toLowerCase(Locale.ENGLISH);
     }
+
 
 }

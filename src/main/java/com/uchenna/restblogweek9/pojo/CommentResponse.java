@@ -1,7 +1,7 @@
-package com.uchenna.restblogweek9.response;
+package com.uchenna.restblogweek9.pojo;
 
 import com.uchenna.restblogweek9.model.Comment;
-import com.uchenna.restblogweek9.model.User;
+import com.uchenna.restblogweek9.model.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,4 +12,5 @@ public class CommentResponse {
     private String message;
     private LocalDateTime timeStamp;
     private Comment comment;
+    private Post post;
 }
